@@ -61,7 +61,7 @@ Your goal:
 """
 
 
-# Deepgram transcription options (adjust as needed)
+# Deepgram transcription options 
 text_options = PrerecordedOptions(
     model="nova-2",
     language="en",
@@ -72,7 +72,7 @@ text_options = PrerecordedOptions(
     sentiment=True,
 )
 
-# Deepgram TTS options (adjust voice/model as available in your plan)
+# Deepgram TTS options 
 speak_options = SpeakOptions(
     model="aura-asteria-en",
     encoding="linear16",
