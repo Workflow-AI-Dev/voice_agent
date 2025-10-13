@@ -15,6 +15,19 @@ SAMPLE_RATE = 16000
 CHANNELS = 1
 DURATION = 5  
 
+conversation_history = [
+    {"role": "system", "content": utils.system_prompt}
+]
+state = {
+    "patient_type": None,
+    "name": None,
+    "email": None,
+    "phone": None,
+    "reason": None,
+    "completed": False
+}
+
+
 def is_office_hours():
     now = datetime.now()
     weekday = now.weekday()  # Monday=0, Sunday=6
@@ -55,14 +68,41 @@ def main():
             transcribed_text = transcript_json["results"]["channels"][0]["alternatives"][0]["transcript"]
             print(f"\n👤 You said: {transcribed_text}")
 
+            # --- Detect exit intent ---
+            should_exit, farewell_msg = utils.check_exit_intent(transcribed_text)
+            if should_exit:
+                if not farewell_msg:
+                    farewell_msg = "Thank you for calling Brookline Progressive Dental Team. Have a wonderful day!"
+
+                print(f"🤖 Assistant: {farewell_msg}")
+
+                payload = {"text": farewell_msg}
+                out_file = tempfile.NamedTemporaryFile(delete=False, suffix=".wav").name
+                utils.deepgram.speak.rest.v("1").save(out_file, payload, utils.speak_options)
+
+                print("🎧 Speaking goodbye...")
+                audio_data, fs = sf.read(out_file)
+                sd.play(audio_data, samplerate=fs)
+                sd.wait()
+
+                print("👋 Ending call.\n")
+                break
+
+
             if not transcribed_text.strip():
                 continue
 
             # Step 3: Get LLM response
             office_status = "within office hours" if is_office_hours() else "after office hours"
-            prompt = f"The current time is {office_status}. Caller said: {transcribed_text}"
-            response_text = utils.ask_openai(prompt)
+            user_message = f"The current time is {office_status}. Caller said: {transcribed_text}"
+
+            conversation_history.append({"role": "user", "content": user_message})
+
+            response_text = utils.ask_openai(conversation_history)
+            conversation_history.append({"role": "assistant", "content": response_text})
+
             print(f"🤖 Assistant: {response_text}")
+
 
             # Step 4: Generate speech (in memory)
             payload = {"text": response_text}
