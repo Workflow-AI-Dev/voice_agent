@@ -35,7 +35,7 @@ Your goal:
 Use this as your natural conversational flow (don't read it like a script):
 
 1. **Greeting**
-   “Hey there, thank you for calling Brookline Progressive Dental Team. Uh, may I ask if you're a new patient, an existing patient, or calling for another reason?”
+   “Hey there, thank you for calling Brookline Progressive Dental Team. May I ask if you're a new patient, an existing patient, or calling for another reason?”
 
 2. **If new patient** → Welcome them warmly, like:
    “Ah, that's great! We're really excited to have you join the practice.”
@@ -157,7 +157,7 @@ def check_exit_intent(text: str):
                         "Your job is to decide if the caller is trying to end the call. "
                         "Do NOT treat polite refusals like 'no', 'not now', or 'no thanks' "
                         "as conversation endings UNLESS they are clearly followed by farewell intent "
-                        "(e.g., 'no thanks, bye', 'no, that’s all', 'no, I’ll call later'). "
+                        "(e.g., 'no thanks, bye', 'no, that's all', 'no, I'll call later'). "
                         "Only end if the user clearly indicates the call is over or says goodbye. "
                         "If they seem to just decline info or say 'no' mid-conversation, keep the call open. "
                         "Respond ONLY with a JSON object, e.g.: "

@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Brookline Voice Agent</title>
+    <script type="module">
+      import { Device } from "https://cdn.jsdelivr.net/npm/@twilio/voice-sdk@latest/dist/twilio.min.js";
+
+      let device;
+      let activeCall;
+
+      async function initDevice() {
+        const resp = await fetch("/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ identity: "brookline_browser" }),
+        });
+        const { token } = await resp.json();
+
+        device = new Device(token, { logLevel: "info" });
+
+        device.on("ready", () => console.log("✅ Device ready."));
+        device.on("error", (err) => console.error("❌ Error:", err));
+        device.on("incoming", (call) => {
+          console.log("📞 Incoming call from", call.parameters.From);
+          if (confirm("Incoming call! Accept?")) call.accept();
+        });
+        device.on("connect", (call) => {
+          activeCall = call;
+          console.log("🔊 Call connected");
+        });
+        device.on("disconnect", () => {
+          activeCall = null;
+          console.log("👋 Call ended");
+        });
+      }
+
+      async function makeCall() {
+        if (!device) await initDevice();
+        const number = document.getElementById("number").value;
+        const call = device.connect({ params: { To: number } });
+        activeCall = call;
+      }
+
+      function hangup() {
+        if (activeCall) activeCall.disconnect();
+      }
+
+      window.onload = initDevice;
+      window.makeCall = makeCall;
+      window.hangup = hangup;
+    </script>
+  </head>
+  <body>
+    <h2>Brookline Progressive Dental Voice Console</h2>
+    <input id="number" placeholder="+1XXXXXXXXXX" />
+    <button onclick="makeCall()">Call</button>
+    <button onclick="hangup()">Hang Up</button>
+  </body>
+</html>
