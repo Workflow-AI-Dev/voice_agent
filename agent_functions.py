@@ -68,17 +68,25 @@ async def validate_contact(params):
     return {"valid_email": valid_email, "valid_phone": valid_phone}
 
 async def capture_contact(params):
-    """Capture caller contact info and save as JSON."""
-    first_name = params.get("firstName", "Unknown")
-    last_name = params.get("lastName", "Unknown")
+    """Capture caller contact info and save as JSON"""
+    full_name = params.get("fullName", "").strip()
     email = params.get("email", "Unknown")
     phone = params.get("phoneNumber", "Unknown")
     reason = params.get("reason", "Unknown")
     patient_type = params.get("patientType", "other")
 
-    # Default structure for saving
+    first_name, last_name = "Unknown", "Unknown"
+    if full_name:
+        parts = full_name.split()
+        if len(parts) == 1:
+            first_name = parts[0]
+        else:
+            first_name = parts[0]
+            last_name = " ".join(parts[1:])
+
     record = {
         "patientType": patient_type,
+        "fullName": full_name,
         "firstName": first_name,
         "lastName": last_name,
         "email": email,
@@ -91,6 +99,7 @@ async def capture_contact(params):
     }
 
     return save_call_data(record)
+
 
 async def end_call(params):
     """Gracefully close the conversation."""
@@ -109,7 +118,7 @@ FUNCTION_DEFINITIONS = [
     {
         "name": "check_office_hours",
         "description": "Check whether Brookline Progressive Dental is currently open.",
-        "parameters": {"type": "object", "properties": {}},
+        "parameters": {"type": "object", "properties": {}, "required": []},
     },
     {
         "name": "validate_contact",
@@ -120,6 +129,7 @@ FUNCTION_DEFINITIONS = [
                 "email": {"type": "string"},
                 "phone": {"type": "string"},
             },
+            "required": []
         },
     },
     {
@@ -154,6 +164,7 @@ FUNCTION_DEFINITIONS = [
                 }
             },
         },
+        "required": []
     },
 ]
 
